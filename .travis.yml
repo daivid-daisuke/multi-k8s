@@ -25,7 +25,6 @@ deploy:
   app: multi-docker
   env: MultiDocker-env
   bucket_name: elasticbeanstalk-us-east-2-884871223445
-  s3_host_name: s3.us-east-2.amazonaws.com
   bucket_path: docker-multi
   on:
     branch: master
