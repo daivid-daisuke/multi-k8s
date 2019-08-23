@@ -3,9 +3,9 @@
   "containerDefinitions": [
     {
       "name": "client",
-      "image": "dkawanam/multi-client",
+      "image": "dkawanam/multi-client", #コンテナごとに設定を行う
       "hostname": "client",
-      "essential": false,
+      "essential": false, #必須のサービスではないとみなす
       "memory": 128
     },
     {
