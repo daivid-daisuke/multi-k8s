@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: client
-          image: dkawanam/multi-client
+          image: urdavid/multi-client
           ports:
             - containerPort: 3000
