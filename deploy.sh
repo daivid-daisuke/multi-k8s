@@ -12,5 +12,5 @@ docker push urdavid/multi-worker:latest:$SHA
 
 kubectl apply -f k8s
 kubectl set image deployments/server-deployment server=urdavid/multi-server:$SHA
-kubectl set image deployments/client-deployment server=urdavid/multi-client:$SHA
-kubectl set image deployments/worker-deployment server=urdavid/multi-worker:$SHA
+kubectl set image deployments/client-deployment client=urdavid/multi-client:$SHA
+kubectl set image deployments/worker-deployment worker=urdavid/multi-worker:$SHA
