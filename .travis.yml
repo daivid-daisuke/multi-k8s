@@ -1,34 +1,28 @@
 sudo: required
 services:
-- docker
-before_install:
-- docker build -t urdavid/react-test -f ./client/Dockerfile.dev ./client
-script:
-- docker run urdavid/react-test npm test -- --coverage
-after_success:
-- docker build -t urdavid/multi-client ./client
-- docker build -t urdavid/multi-nginx ./nginx
-- docker build -t urdavid/multi-server ./server
-- docker build -t urdavid/multi-worker ./worker
-- echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
-- docker push urdavid/multi-client
-- docker push urdavid/multi-nginx
-- docker push urdavid/multi-server
-- docker push urdavid/multi-worker
+  - docker
+env:
+  global:
+    - SHA=$(git rev-parse HEAD)
+    - CLOUDSDK_CORE_DISABLE_PROMPTS=1
 
-notifications:
-  slack:
-    secure: IJMX14BF04kxN778zAC5DaHbzEsyvjA4VyXD1lbcr2Pec08EEe08C7eYBBOs3vv5b3ySzdw4kvQmBNOZ76BcckWEwN3ephPZiNs/j7BYiiNIvxkdtS4dyfqpIMtUhafDddF+3/hr0V/hd1hK6OAK5+aaLheBi+9rzqhH92Q20TY9Dayq96Syioekwh69UetotKfcF2rZucrzAi0ZEfJCqiABaJZ6jiFZVCVxhSqx4KzBnfWNjTq/OZELbOuL+HTpkXNp93YheDLNujVF73grRsddrjXKEadSDBVIhprn/FZTghKRXIBB7vFcL99kcdigJF8TvRFynYABEpbLou8lxKcEoW5LSMX2CxyFNA5EYGQAq3q7Zua94X/kduAolBxHfzoDj8QTha74Jni7m3wKGDrVHuMaMqs/Isk2JtEKoxKKW1DTCgAHJnhiEfyJvdZDpwqeyEQgYU7DAEcjDxLKlm2k7OjjHkLdGG4rLlgWeV/xRnY+2ZBeKc+BNG6eCwO3vQwFEqleuw1ZP+ZqLeQzhimH/lIR2CmnMq95P5GAtGifYJyM4rrxCgtcURhQHhHLmQavD/1FYKDbqz/uultTuciD0kDa7u4dJ66d9AmPV2ljEysQvA7V3dHkx3Lcih1tyx59zKaXtg9qDczM8NoN14gNzKyyjxkDg+lRTN5yMj4=
+before_install:
+  - openssl aes-256-cbc -K $encrypted_98622070467e_key -iv $encrypted_98622070467e_iv -in service-account.json.enc -out service-account.json -d
+  - curl htps://sdk.cloud.google.com | bash > /dev/nul;
+  - source $HOME/google-cloud-sdk/path.bash.inc
+  - gcloud components update kubectl
+  - gcloud auth activate-service-account --key-file service-account.json
+  - gcloud config set project cultivated-cove-250902
+  - gcloud config set compute/zone us-central1-a
+  - gcloud container clusters get-credentials multi-cluster
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker build -t urdavid/react-test -f./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true urdavid/react-test npm test
 
 deploy:
-  provider: elasticbeanstalk
-  region: us-east-2
-  app: multi-docker
-  env: MultiDocker-env
-  bucket_name: elasticbeanstalk-us-east-2-884871223445
-  bucket_path: docker-multi
+  provider: script
+  script: bash ./deploy.sh
   on:
     branch: master
-  access_key_id: $AWS_ACCESS_KEY
-  secret_access_key:
-    secure: $AWS_SECRET_KEY
